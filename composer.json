@@ -1,8 +1,8 @@
 {
-    "name": "sergiosgc/rest-router",
-    "description": "Filesystem based request router for HTTP verb-aware applications (RESTful)",
-    "keywords": ["rest", "router"],
-    "homepage": "https://github.com/sergiosgc/composer-fs-rest-router",
+    "name": "sergiosgc/crud-trait",
+    "description": "PHP Trait that enables create Read Update Delete operations on PHP classes ",
+    "keywords": ["db", "orm"],
+    "homepage": "https://github.com/sergiosgc/crud-trait",
     "license": "MIT",
     "version": "1.0",
     "authors": [
