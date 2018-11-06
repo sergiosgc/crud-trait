@@ -5,8 +5,18 @@ trait CRUD {
 	public static function getDB() {
         return \app\Application::singleton()->getDatabaseConnection();
     }
+    public static function dbKeyFields() {
+        if (in_array('id', static::dbFields())) return ['id'];
+        return [];
+    }
+    public static function dbKeySequence() {
+        return null;
+    }
     public static function dbFields() {
         return array_map(function($p) { return $p->getName(); }, array_filter((new \ReflectionClass(get_called_class()))->getProperties(), function($p) { return $p->getModifiers() & 0x100 /* public */; }));
+    }
+    public function dbSerializeField($field, $value) {
+        return $value;
     }
     public function dbMap($row) {
         $fields = static::dbFields();
@@ -88,5 +98,30 @@ EOS
         if (count($result) > 1) throw new Exception('dbRead filter returned more than one result');
         if (count($result) == 0) return null;
         return $result[0];
+    }
+    public function dbCreate() {
+        $fields = static::dbFields();
+        $keys = static::dbKeyFields();
+        $toInsert = [];
+        foreach ($fields as $field) {
+            if (is_null($this->$field) && in_array($field, $keys)) continue;
+            $toInsert[$field] = $this->dbSerializeField($field, $this->$field);
+        }
+        $query = sprintf(<<<EOS
+INSERT INTO "%s"(%s) VALUES(%s)
+EOS
+            , static::dbTableName(), 
+            implode(',', array_map(function($fieldName) { return sprintf('"%s"', $fieldName); }, array_keys($toInsert))),
+            implode(',', array_map(function($x) { return '?'; }, $toInsert)));
+        $sth = static::getDB()->prepare($query);
+        $sth->execute(array_values($toInsert));
+        $insertId = static::getDB()->lastInsertId(static::dbKeySequence());
+        $sth->closeCursor();
+
+        if (count($keys) == 1) {
+            $key = $keys[0];
+            $this->$key = $insertId;
+        }
+        return $insertId;
     }
 }
