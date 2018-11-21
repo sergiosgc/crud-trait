@@ -97,15 +97,6 @@ EOS
         
         return [$result, $count];
     }
-    public static function dbRead($filter) {
-        $filterArgs = func_get_args();
-        array_shift($filterArgs);
-        $args = array_merge([null, 'ASC', $filter, null, 20], $filterArgs);
-        list($result, $dummy) = call_user_func_array([get_called_class(), 'dbReadAll'], $args);
-        if (count($result) > 1) throw new Exception('dbRead filter returned more than one result');
-        if (count($result) == 0) return null;
-        return $result[0];
-    }
     public function dbCreate() {
         $fields = static::dbFields();
         $keys = static::dbKeyFields();
@@ -130,5 +121,38 @@ EOS
             $this->$key = $insertId;
         }
         return $insertId;
+    }
+    public static function dbRead($filter) {
+        $filterArgs = func_get_args();
+        array_shift($filterArgs);
+        $args = array_merge([null, 'ASC', $filter, null, 20], $filterArgs);
+        list($result, $dummy) = call_user_func_array([get_called_class(), 'dbReadAll'], $args);
+        if (count($result) > 1) throw new Exception('dbRead filter returned more than one result');
+        if (count($result) == 0) return null;
+        return $result[0];
+    }
+    public function dbUpdate() {
+        $fields = static::dbFields();
+        $keys = static::dbKeyFields();
+        $toUpdate = [];
+        $where = [];
+        foreach($fields as $field) {
+            $toUpdate[$field] = $this->dbSerializeField($field, $this->$field);
+        }
+        foreach ($keys as $key) {
+            unset($toUpdate[$key]);
+            $where[$key] = $this->dbSerializeField($key, $this->$key);
+        }
+        $query = sprintf(<<<EOS
+UPDATE "%s"
+SET %s
+WHERE %s
+EOS
+        , static::dbTableName(),
+        implode(',', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName);; }, array_keys($toUpdate))),
+        implode(' AND ', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName); }, array_keys($where))));
+        $sth = static::getDB()->prepare($query);
+        $sth->execute(array_merge(array_values($toUpdate), array_values($where)));
+        $sth->closeCursor();
     }
 }
