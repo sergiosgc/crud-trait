@@ -31,6 +31,13 @@ trait CRUD {
         $className = preg_replace('/^_/', '', $className);
         return $className;
     }
+    public static function dbExec($query) {
+        $args = func_get_args();
+        array_shift($args);
+        $sth = static::getDB()->prepare($query);
+        $sth->execute($args);
+        $sth->closeCursor();
+    }
     public static function dbFetchAll($query) {
         $args = func_get_args();
         array_shift($args);
