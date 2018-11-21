@@ -155,4 +155,18 @@ EOS
         $sth->execute(array_merge(array_values($toUpdate), array_values($where)));
         $sth->closeCursor();
     }
+    public function dbDelete() {
+        $keys = static::dbKeyFields();
+        $where = [];
+        foreach ($keys as $key) {
+            $where[$key] = $this->dbSerializeField($key, $this->$key);
+        }
+        $query = sprintf('DELETE FROM "%s" WHERE %s'
+            , static::dbTableName(),
+            implode(' AND ', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName); }, array_keys($where))));
+        print($query);
+        $sth = static::getDB()->prepare($query);
+        $sth->execute(array_values($where));
+        $sth->closeCursor();
+    }
 }
