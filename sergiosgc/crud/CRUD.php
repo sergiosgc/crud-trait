@@ -2,7 +2,7 @@
 namespace sergiosgc\crud;
 
 trait CRUD {
-	public static function getDB() {
+    public static function getDB() {
         return \app\Application::singleton()->getDatabaseConnection();
     }
     public static function dbKeyFields() {
