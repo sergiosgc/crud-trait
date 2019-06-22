@@ -92,7 +92,7 @@ FROM "%s"
 %s
 EOS
                 , static::dbTableName(), empty($filter) ? '' : sprintf('WHERE %s', $filter));
-            $count = (int) ceil((0 + call_user_func_array(array($class, 'dbFetchAll'), array_merge([$query], $filter_args))['count']) / $pageSize);
+            $count = (int) ceil((0 + call_user_func_array(array($class, 'dbFetchAll'), array_merge([$query], $filter_args))[0]['count']) / $pageSize);
         }
         
         return [$result, $count];
