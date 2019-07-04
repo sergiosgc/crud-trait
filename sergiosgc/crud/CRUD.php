@@ -169,4 +169,12 @@ EOS
         $sth->execute(array_values($where));
         $sth->closeCursor();
     }
+    public function setDescribedFields($values) {
+        if (!is_callable([$this, 'describeFields'])) throw new Exception('setDescribedFields() requires function describeFields() to be implemented');
+        foreach ($this->describeFields() as $field => $description) {
+            if (!in_array($description['type'], ['int', 'text'])) continue;
+            if (!array_key_exists($field, $values)) continue;
+            $this->$field = $values[$field];
+        }
+    }
 }
