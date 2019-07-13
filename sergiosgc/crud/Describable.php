@@ -1,5 +1,5 @@
 <?php
-namespace app\model;
+namespace sergiosgc\crud;
 
 interface Describable {
     public static function describeFields();
