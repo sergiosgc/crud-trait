@@ -42,7 +42,7 @@ You may read a set of objects using the `dbReadAll` method:
 This would read page 1 of all gizmos whose `color` equals blue, sorted in ASCending order by `name` using a page size of 20 items per page. The function returns an array of `VirtuousGizmo` and a total count (for pagination UI). All arguments after the page size (20 in this case) are passed to the query execution.
     
 
-And that's it. The rest of the document deals with how to deal with abstraction leaks: 
+And that's it. The rest of the document focuses on how to deal with abstraction leaks: 
 * handling leaks in the opinionated approach
 * handling leaks into the underlying SQL
 
@@ -95,7 +95,7 @@ If fields require serializing before storage, override the `dbSerializeField()` 
 
 If you need to directly execute SQL queries, you have access to `dbExec()`, `dbFetchAll()` and `dbFetchAllCallback()`. dbExec and dbFetchAll receive as arguments a query with placeholders (`?`), and values to place in the placeholders. dbExec executes the query and returns nothing (throws an exception on error). dbFetchAll executes the query and returns all rows. dbFetchAllCallback executes the query, maps the rows using the callback (second argument) and returns the resulting array.
 
-dbFetchAllCallaback, namely, allows you to get a set of objects using a non-basic query. For example:
+dbFetchAllCallback, namely, allows you to get a set of objects using a non-basic query. For example:
 
     $gizmos = VirtuousGizmo::dbFetchAllCallback(<<<EOQ
     SELECT * FROM alpha_gizmos WHERE color = ?
