@@ -1,7 +1,7 @@
 # Describable interface
 
 Instead of overriding the relational mapping methods in the CRUD trait, as described in the main Readme, you may opt for a more
-comprehensive approach of fully describing the fields. You do that by implementing the \sergiosgc\crud\Describable interface, 
+comprehensive approach of fully describing the fields. You do that by implementing the [\sergiosgc\crud\Describable interface](../sergiosgc/crud/Describable.php), 
 which means implementing a `describeFields` method. Let's setup an example: 
 
 * A ComplexGizmo class, which has an id, name, a many to one relationship with an Owner and a many to many relationship with Part(s).
