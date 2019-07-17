@@ -107,12 +107,12 @@ When a field is marked relational, it still behaves according to its type.
 If you want to access the object on the other end of the relation, CRUD provides a `dbGetReferred()` method, which receives a 
 field as an argument:
 
-    print($gizmo->getReferred('owner')->name); // Will print the owner's name
+    print($gizmo->dbGetReferred('owner')->name); // Will print the owner's name
     
 Obviously, on a many to many relationship, `dbGetReferred()` returns an array:
 
-    print(count($gizmo->getReferred('parts'))); // Will print the count of parts
-    print($gizmo->getReferred('parts')[0]->name); // Will print the first part name
+    print(count($gizmo->dbGetReferred('parts'))); // Will print the count of parts
+    print($gizmo->dbGetReferred('parts')[0]->name); // Will print the first part name
 
 
 
