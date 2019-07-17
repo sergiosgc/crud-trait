@@ -93,7 +93,7 @@ If fields require serializing before storage, override the `dbSerializeField()` 
 
 ### Describable interface
 
-If you find yourself overriding a lot of these methods, it may worthwile to look at the [Describable interface](docs/Describable.md)
+If you find yourself overriding a lot of these methods, it may worthwhile to look at the [Describable interface](docs/Describable.md)
 
 ## SQL Access
 
