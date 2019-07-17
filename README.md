@@ -91,6 +91,10 @@ If fields require serializing before storage, override the `dbSerializeField()` 
       }
     }
 
+### Describable interface
+
+If you find yourself overriding a lot of these methods, it may worthwile to look at the [Describable interface](docs/Describable.md)
+
 ## SQL Access
 
 If you need to directly execute SQL queries, you have access to `dbExec()`, `dbFetchAll()` and `dbFetchAllCallback()`. dbExec and dbFetchAll receive as arguments a query with placeholders (`?`), and values to place in the placeholders. dbExec executes the query and returns nothing (throws an exception on error). dbFetchAll executes the query and returns all rows. dbFetchAllCallback executes the query, maps the rows using the callback (second argument) and returns the resulting array.
@@ -105,3 +109,7 @@ dbFetchAllCallback, namely, allows you to get a set of objects using a non-basic
       , function ($row) { return (new VirtuousGizmo())->dbMap($row); } ,
       'green', 
       1.0);
+
+## Handling relations between tables/classes
+
+The ability to handle relationships depends on field description, as documented in the [Describable interface](docs/Describable.md)
