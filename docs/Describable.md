@@ -111,7 +111,8 @@ field as an argument:
     
 Obviously, on a many to many relationship, `dbGetReferred()` returns an array:
 
-    var_dump($gizmo->getReferred('parts')); // Will dump an array of Part objects
+    print(count($gizmo->getReferred('parts'))); // Will print the count of parts
+    print($gizmo->getReferred('parts')[0]->name); // Will print the first part name
 
 
 
