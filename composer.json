@@ -12,7 +12,8 @@
         }
     ],
     "require": {
-        "php": ">=7.0.0"
+        "php": ">=7.0.0",
+        "galbar/jsonpath": "dev-master"
     },
     "autoload": {
         "psr-4": {"sergiosgc\\": "sergiosgc/"}
