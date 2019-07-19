@@ -37,12 +37,25 @@ trait CRUD {
             return array_map(function($p) { return $p->getName(); }, array_filter((new \ReflectionClass(get_called_class()))->getProperties(), function($p) { return $p->getModifiers() & 0x100 /* public */; }));
         }
     }
+    public function dbUnserializeField($field, $value) {
+        if (isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) {
+            $desc = static::describeFields();
+            if ($desc['field']['type'] == 'json') return json_decode($value, true);
+        }
+
+        return $value;
+    }
     public function dbSerializeField($field, $value) {
+        if (isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) {
+            $desc = static::describeFields();
+            if ($desc['field']['type'] == 'json') return json_encode($value);
+        }
+
         return $value;
     }
     public function dbMap($row) {
         $fields = static::dbFields();
-        foreach ($row as $field => $value) if (in_array($field, $fields)) $this->$field = $value;
+        foreach ($row as $field => $value) if (in_array($field, $fields)) $this->$field = $this->dbUnserializeField($field, $value);
         return $this;
     }
     public static function dbTableName($readOperation = false) {
