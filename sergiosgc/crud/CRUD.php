@@ -102,14 +102,13 @@ SELECT
  %s
 FROM "%s"
 %s
-ORDER BY "%s" %s
+%s
 %s
 EOS
             , implode(', ', array_map(function($f) { return "\"$f\""; }, static::dbFields())),
             static::dbTableName(), 
             empty($filter) ? '' : sprintf('WHERE %s', $filter), 
-            $sortColumn, 
-            $sortDir == 'DESC' ? 'DESC' : 'ASC', 
+            $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '',
             is_null($page) ? '' : sprintf('LIMIT %d OFFSET %d', $pageSize, $pageSize * ($page - 1)));
         $result = call_user_func_array(
             array($class, 'dbFetchAllCallback'),
