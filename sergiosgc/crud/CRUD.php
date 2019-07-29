@@ -373,4 +373,14 @@ EOS;
         }
         throw new Exception('Unimplemented'); // TODO: Implement me
     }
+    public function dbJsonGet($fieldName, $jsonPath) {
+        if (!isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) throw new Exception('dbGetReferred can only be used by Describable classes');
+        $jsonObject = new \JsonPath\JsonObject($this->$fieldName);
+        return $jsonObject->get($jsonPath);
+    }
+    public function dbJsonSet($fieldName, $jsonPath, $value) {
+        if (!isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) throw new Exception('dbGetReferred can only be used by Describable classes');
+        $jsonObject = new \JsonPath\JsonObject($this->$fieldName);
+        $this->$fieldName = (string) $jsonObject->set($jsonPath, $value);
+    }
 }
