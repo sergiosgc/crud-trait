@@ -12,6 +12,7 @@ class RelationalFormOptionFetcher {
                 continue;
             } elseif (isset($property['db:many_to_one'])) {
                 $properties[$name] = static::setManyToOneOptions($property, $name, $properties);
+                if (!\array_key_exists('ui:widget', $property)) $properties[$name]['ui:widget'] = 'select';
                 continue;
             }
         }
@@ -32,7 +33,7 @@ class RelationalFormOptionFetcher {
                 null, 
                 null];
             if (isset($manyToOne['optionsFilterArgs'])) $readAllArgs = array_merge($readAllArgs, $manyToOne['optionsFilterArgs']);
-            list($options, $optionCount) = call_user_func_array( [$class, 'dbReadAll'], $readAllArgs);
+            list($options, $optionCount) = call_user_func_array( [$class, 'dbReadPaged'], $readAllArgs);
         }
         $property['options'] = array_map(
             function($option) use ($manyToOne) {
@@ -72,7 +73,7 @@ class RelationalFormOptionFetcher {
                 null, 
                 null];
             if (isset($manyToMany['optionsFilterArgs'])) $readAllArgs = array_merge($readAllArgs, $manyToMany['optionsFilterArgs']);
-            list($options, $optionCount) = call_user_func_array( [$class, 'dbReadAll'], $readAllArgs);
+            list($options, $optionCount) = call_user_func_array( [$class, 'dbReadPaged'], $readAllArgs);
         }
         $property['options'] = array_map(
             function($option) use ($manyToMany) {

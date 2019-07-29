@@ -35,9 +35,9 @@ You can now operate on the class/table using the db**C**reate(), db**R**ead(), d
     
 ## Set reads
 
-You may read a set of objects using the `dbReadAll` method:
+You may read a set of objects using the `dbReadPaged` method:
 
-    list($gizmos, $gizmoCount) = VirtuousGizmo::dbReadAll('name', 'ASC', 'color = ?', 1, 20, 'blue');
+    list($gizmos, $gizmoCount) = VirtuousGizmo::dbReadPaged('name', 'ASC', 'color = ?', 1, 20, 'blue');
     
 This would read page 1 of all gizmos whose `color` equals blue, sorted in ASCending order by `name` using a page size of 20 items per page. The function returns an array of `VirtuousGizmo` and a total count (for pagination UI). All arguments after the page size (20 in this case) are passed to the query execution.
     

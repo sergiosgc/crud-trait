@@ -107,7 +107,7 @@ trait CRUD {
         $sth->closeCursor();
         return $result;
     }
-    public static function dbReadAll($sortColumn = null, $sortDir = 'ASC', $filter = null, $page = null, $pageSize = 20) {
+    public static function dbReadPaged($sortColumn = null, $sortDir = 'ASC', $filter = null, $page = null, $pageSize = 20) {
         $class = get_called_class();
         $filter_args = func_get_args();
         for ($i=0; $i<5; $i++) array_shift($filter_args);
@@ -175,8 +175,8 @@ EOS
     public static function dbRead($filter) {
         $filterArgs = func_get_args();
         array_shift($filterArgs);
-        $args = array_merge([null, 'ASC', $filter, null, 20], $filterArgs);
-        list($result, $dummy) = call_user_func_array([get_called_class(), 'dbReadAll'], $args);
+        $args = array_merge([null, 'ASC', $filter], $filterArgs);
+        $result = call_user_func_array([get_called_class(), 'dbReadAll'], $args);
         if (count($result) > 1) throw new Exception('dbRead filter returned more than one result');
         if (count($result) == 0) return null;
         return $result[0];
