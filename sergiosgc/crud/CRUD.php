@@ -12,7 +12,7 @@ trait CRUD {
                 function($key, $value) {
                     if (isset($value['db:primarykey'])) return $key;
                     return false;
-                }, 
+                },
                 array_keys($fields),
                 $fields
             ));
@@ -111,7 +111,7 @@ trait CRUD {
         $class = get_called_class();
         $filter_args = func_get_args();
         for ($i=0; $i<5; $i++) array_shift($filter_args);
-        
+
         $query = sprintf(<<<EOS
 SELECT
  %s
@@ -121,17 +121,17 @@ FROM "%s"
 %s
 EOS
             , implode(', ', array_map(function($f) { return "\"$f\""; }, static::dbFields())),
-            static::dbTableName(), 
-            empty($filter) ? '' : sprintf('WHERE %s', $filter), 
+            static::dbTableName(),
+            empty($filter) ? '' : sprintf('WHERE %s', $filter),
             $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '',
             is_null($page) ? '' : sprintf('LIMIT %d OFFSET %d', $pageSize, $pageSize * ($page - 1)));
         $result = call_user_func_array(
             array($class, 'dbFetchAllCallback'),
             array_merge(
-                [$query, 
-                 function ($row) use ($class) { return (new $class())->dbMap($row); }], 
+                [$query,
+                 function ($row) use ($class) { return (new $class())->dbMap($row); }],
                 $filter_args));
-        
+
         if (is_null($page)) {
             $count = count($result);
         } else {
@@ -143,14 +143,14 @@ EOS
                 , static::dbTableName(), empty($filter) ? '' : sprintf('WHERE %s', $filter));
             $count = (int) ceil((0 + call_user_func_array(array($class, 'dbFetchAll'), array_merge([$query], $filter_args))[0]['count']) / $pageSize);
         }
-        
+
         return [$result, $count];
     }
     public static function dbReadAll($sortColumn = null, $sortDir = 'ASC', $filter = null) {
         $class = get_called_class();
         $filter_args = func_get_args();
         for ($i=0; $i<3; $i++) array_shift($filter_args);
-        
+
         $query = sprintf(<<<EOS
 SELECT
  %s
@@ -159,16 +159,16 @@ FROM "%s"
 %s
 EOS
             , implode(', ', array_map(function($f) { return "\"$f\""; }, static::dbFields())),
-            static::dbTableName(), 
-            empty($filter) ? '' : sprintf('WHERE %s', $filter), 
+            static::dbTableName(),
+            empty($filter) ? '' : sprintf('WHERE %s', $filter),
             $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '');
         $result = call_user_func_array(
             array($class, 'dbFetchAllCallback'),
             array_merge(
-                [$query, 
-                 function ($row) use ($class) { return (new $class())->dbMap($row); }], 
+                [$query,
+                 function ($row) use ($class) { return (new $class())->dbMap($row); }],
                 $filter_args));
-        
+ 
         return $result;
     }
     public function dbCreate() {
@@ -182,7 +182,7 @@ EOS
         $query = sprintf(<<<EOS
 INSERT INTO "%s"(%s) VALUES(%s)
 EOS
-            , static::dbTableName(), 
+            , static::dbTableName(),
             implode(',', array_map(function($fieldName) { return sprintf('"%s"', $fieldName); }, array_keys($toInsert))),
             implode(',', array_map(function($x) { return '?'; }, $toInsert)));
         $sth = static::getDB()->prepare($query);
@@ -299,7 +299,7 @@ EOS;
             $middleTableName,
             implode(', ', array_map(function($field) use ($leftTableName) { return sprintf('"%s"."%s"', $leftTableName, $field); }, array_keys($manyToMany['keymap']['left']))),
             implode(', ', array_map(function($field) use ($middleTableName) { return sprintf('"%s"."%s"', $middleTableName, $field); }, array_values($manyToMany['keymap']['left']))),
-            $rightTableName, 
+            $rightTableName,
             implode(', ', array_map(function($field) use ($middleTableName) { return sprintf('"%s"."%s"', $middleTableName, $field); }, array_keys($manyToMany['keymap']['right']))),
             implode(', ', array_map(function($field) use ($rightTableName) { return sprintf('"%s"."%s"', $rightTableName, $field); }, array_values($manyToMany['keymap']['right']))),
             implode(', ', array_map(function($field) use ($leftTableName) { return sprintf('"%s"."%s"', $leftTableName, $field); }, static::dbKeyFields())),
@@ -331,7 +331,7 @@ EOS;
         $leftTableName = static::dbTableName(true);
         $middleTableName = $manyToMany['keymap']['middle_table'];
         $rightTableName = $class::dbTableName(true);
-        
+ 
         $currentValues = $this->describableManyToManyGetter($name, $description);
         $newValues = $this->$name;
         $toAdd = [];
