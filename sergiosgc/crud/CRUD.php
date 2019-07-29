@@ -40,7 +40,9 @@ trait CRUD {
     public function dbUnserializeField($field, $value) {
         if (isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) {
             $desc = static::describeFields();
-            if ($desc['field']['type'] == 'json') return json_decode($value, true);
+            if ($desc[$field]['type'] == 'boolean') ($value == 'f' || $value == 'false' || $value == '0') ? false : (bool) $value;
+            if ($desc[$field]['type'] == 'json') return json_decode($value, true);
+            if ($desc[$field]['type'] == 'timestamp') try { return new \DateTime($value); } catch (\Exception $e) { return $value; }
         }
 
         return $value;
@@ -48,7 +50,20 @@ trait CRUD {
     public function dbSerializeField($field, $value) {
         if (isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) {
             $desc = static::describeFields();
-            if ($desc['field']['type'] == 'json') return json_encode($value);
+            if ($desc[$field]['type'] == 'boolean') return $value ? '1' : '0';
+            if ($desc[$field]['type'] == 'json') return json_encode($value);
+            if ($desc[$field]['type'] == 'timestamp') {
+                try {
+                    if ($value instanceof \DateTime) {
+                        $datetime = $value;
+                    } elseif (( (string) $value ) === ( (string) ((int) $value) )) { // Unix timestamp
+                        $datetime = new \DateTime('@' . $value);
+                    } else {
+                        $datetime = new DateTime($value);
+                    }
+                    return $datetime->format('c');
+                } catch (\Exception $e) { return $value; }
+            }
         }
 
         return $value;
