@@ -146,6 +146,31 @@ EOS
         
         return [$result, $count];
     }
+    public static function dbReadAll($sortColumn = null, $sortDir = 'ASC', $filter = null) {
+        $class = get_called_class();
+        $filter_args = func_get_args();
+        for ($i=0; $i<3; $i++) array_shift($filter_args);
+        
+        $query = sprintf(<<<EOS
+SELECT
+ %s
+FROM "%s"
+%s
+%s
+EOS
+            , implode(', ', array_map(function($f) { return "\"$f\""; }, static::dbFields())),
+            static::dbTableName(), 
+            empty($filter) ? '' : sprintf('WHERE %s', $filter), 
+            $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '');
+        $result = call_user_func_array(
+            array($class, 'dbFetchAllCallback'),
+            array_merge(
+                [$query, 
+                 function ($row) use ($class) { return (new $class())->dbMap($row); }], 
+                $filter_args));
+        
+        return $result;
+    }
     public function dbCreate() {
         $fields = static::dbFields();
         $keys = static::dbKeyFields();
