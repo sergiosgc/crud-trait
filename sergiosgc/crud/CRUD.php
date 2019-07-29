@@ -288,23 +288,6 @@ EOS;
         if (count(static::dbKeyFields()) == 1) return array_map(function($f) { return $f[0]; }, $result);
         return $result;
     }
-    public function describableSetter($name, $value) {
-        if (!$this instanceof Describable) throw new Exception("CRUD::describableSetter() can only be used by Describable classes");
-        $fields = static::describeFields();
-        if (!in_array($name, array_keys($fields)) || !(isset($fields[$name]['db:many_to_many']) || isset($fields[$name]['db:many_to_one']) || isset($fields[$name]['db:one_to_many']))) {
-            $trace = debug_backtrace();
-            trigger_error(
-                'Undefined property via __set(): ' . $name .
-                ' in ' . $trace[0]['file'] .
-                ' on line ' . $trace[0]['line'],
-                E_USER_NOTICE);
-            return null;
-        }
-        if (isset($fields[$name]['db:many_to_many'])) return $this->describableManyToManySetter($name, $fields[$name], $value);
-        if (isset($fields[$name]['db:many_to_one'])) return $this->describableManyToOneSetter($name, $fields[$name], $value);
-        if (isset($fields[$name]['db:one_to_many'])) return $this->describableOneToManySetter($name, $fields[$name], $value);
-        throw new Exception('Unexpected code reached');
-    }
     public function dbUpdateDescribedRelations() {
         if (!$this instanceof Describable) return;
         $fields = static::describeFields();
