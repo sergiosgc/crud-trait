@@ -355,7 +355,7 @@ EOS;
             !array_key_exists('db:many_to_one', $field) &&
             !array_key_exists('db:many_to_many', $field)) throw new Exception(sprintf('%s has no referential integrity definition', $fieldName));
         if (array_key_exists('db:many_to_one', $field)) {
-            foreach (['type', 'keymap', 'label'] as $required) if (!array_key_exists($required, $field['db:many_to_one'])) throw new Exception(sprintf("%s field is declared db:many_to_one but has no %s descriptor", $fieldName, $required));
+            foreach (['type', 'keymap' ] as $required) if (!array_key_exists($required, $field['db:many_to_one'])) throw new Exception(sprintf("%s field is declared db:many_to_one but has no %s descriptor", $fieldName, $required));
             if (!array_key_exists('keymap', $field['db:many_to_one'])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $fieldName, 'keymap'));
             $class = $field['db:many_to_one']['type'];
             $queryWhere = implode(' AND ', array_map(
