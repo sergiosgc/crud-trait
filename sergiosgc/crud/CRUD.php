@@ -364,6 +364,7 @@ EOS;
         foreach ($toRemove as $right) static::dbExec($query, $left, $right);
     }
     public function dbGetReferred($fieldName) {
+        if (!isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) throw new Exception('dbGetReferred can only be used by Describable classes');
         $fields = static::describeFields();
         if (!array_key_exists($fieldName, $fields)) throw new Exception(sprintf('%s is not a field of %s', $field, \get_called_class()));
         $field = $fields[$fieldName];
