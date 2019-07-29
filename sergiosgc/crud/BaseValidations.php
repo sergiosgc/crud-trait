@@ -22,4 +22,29 @@ class BaseValidations {
         if ($result == 0) return [ $message ];
         return [];
     }
+    public static function dbUnique($field, $describedFields, $values, $class, $message = null) {
+        $message = $message ?: _('Field must be unique');
+        if (!array_key_exists($field, $values)) return [];
+        $keys = $class::dbKeyFields();
+        if (array_reduce($keys, function ($acc, $key) use ($values) { return $acc && array_key_exists($key, $values); }, true)) {
+            $query = sprintf('"%s" = ? AND NOT ((%s) = (%s))', 
+                $field, 
+                implode(', ', array_map(function ($key) { return sprintf('"%s"', $key); }, $keys)),
+                implode(', ', array_map(function ($key) { return '?'; }, $keys))
+            );
+            $dbReadPagedArgs = array_merge( 
+                [ null, null, $query, null, null],
+                [ $values[$field] ],
+                array_map(function ($key) use ($values) { return $values[$key]; }, $keys)
+            );
+        } else {
+            $query = sprintf('"%s" = ?', $field);
+            $dbReadPagedArgs = array_merge( 
+                [ null, null, $query, null, null],
+                [ $values[$field] ]
+            );
+        }
+        $duplicates = call_user_func_array( [ $class, 'dbReadPaged' ], $dbReadPagedArgs)[0];
+        return count($duplicates) ? [ $message ] : [];
+    }
 }

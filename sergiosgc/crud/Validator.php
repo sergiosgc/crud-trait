@@ -12,6 +12,9 @@ class Validator {
         'regexp' => [ 
             'callable' => [ '\sergiosgc\crud\BaseValidations', 'regexp' ]
         ],
+        'db:unique' => [
+            'callable' => [ '\sergiosgc\crud\BaseValidations', 'dbUnique' ]
+        ]
     ];
     public static function registerValidationFunction($validation, $function) {
         if (is_callable($function)) return static::registerValidationFunction($validation, [ 'callable' => $function ]);
