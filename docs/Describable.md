@@ -84,9 +84,9 @@ On Describable classes `CRUD::dbFields` no longer uses the class public fields a
 `describeFields()`.
 
 Descriptors are namespaced. Those that are for application in a specific package have a prefix followed by ':'. That's the case 
-for the `db:primaryKey` descriptor. It marks primary key fields. 
+for the `db:primarykey` descriptor. It marks primary key fields. 
 
-On Describable classes `CRUD::dbKeyFields` no longer assumes `id` is the key field, and relies on fields described with the `db:primaryKey` descriptor.
+On Describable classes `CRUD::dbKeyFields` no longer assumes `id` is the key field, and relies on fields described with the `db:primarykey` descriptor.
 
 `db:many_to_one` and `db:many_to_many` mark the fields as relational, pointing to a different class (and hence table). They must
 contain a `type` defining the class on the other end of the relation. They must define a `keymap` which declares field mappings.
