@@ -383,7 +383,7 @@ EOS;
             !array_key_exists('db:many_to_many', $field)) throw new Exception(sprintf('%s has no referential integrity definition', $fieldName));
         if (array_key_exists('db:many_to_one', $field)) {
             foreach (['type', 'keymap' ] as $required) if (!array_key_exists($required, $field['db:many_to_one'])) throw new Exception(sprintf("%s field is declared db:many_to_one but has no %s descriptor", $fieldName, $required));
-            if (!array_key_exists('keymap', $field['db:many_to_one'])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $fieldName, 'keymap'));
+            if (!array_key_exists('keymap', $field['db:many_to_one'])) throw new Exception(sprintf("%s field is declared db:many_to_one but has no %s descriptor", $fieldName, 'keymap'));
             $class = $field['db:many_to_one']['type'];
             $queryWhere = implode(' AND ', array_map(
                 function($key) {
@@ -397,6 +397,24 @@ EOS;
                 },
                 array_keys($field['db:many_to_one']['keymap']));
             return call_user_func_array( [$class, 'dbRead'], array_merge( [ $queryWhere ], $queryArgs));
+        }
+        if (array_key_exists('db:one_to_many', $field)) {
+            if (!array_key_exists('keymap', $field['db:one_to_many'])) throw new Exception(sprintf("%s field is declared db:one_to_many but has no %s descriptor", $fieldName, 'keymap'));
+            if (!array_key_exists('type', $field['db:one_to_many'])) throw new Exception(sprintf("%s field is declared db:one_to_many but has no %s descriptor", $fieldName, 'keymap'));
+            if (!class_exists($field['db:one_to_many']['type'])) throw new Exception(sprintf("%s field declared as type %s but that class does not exist", $fieldName, $field['db:one_to_many']['type']));
+            $class = $field['db:one_to_many']['type'];
+            $queryWhere = implode(' AND ', array_map(
+                function($key) {
+                    return sprintf('"%s" = ?', $key);
+                },
+                array_values($field['db:one_to_many']['keymap'])));
+            $_this = $this;
+            $queryArgs = array_map(
+                function($key) use ($_this) {
+                    return $_this->$key;
+                },
+                array_keys($field['db:one_to_many']['keymap']));
+            return call_user_func_array( [$class, 'dbReadAll'], array_merge( [ null, null, $queryWhere ], $queryArgs));
         }
         throw new Exception('Unimplemented'); // TODO: Implement me
     }
