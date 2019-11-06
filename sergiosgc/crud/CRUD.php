@@ -52,7 +52,7 @@ trait CRUD {
             $desc = static::describeFields();
             if ($desc[$field]['type'] == 'boolean') return $value ? '1' : '0';
             if ($desc[$field]['type'] == 'json') {
-                return is_null($value) ? null : (is_string($value) ? $value : json_encode($value));
+                return is_null($value) || '' === $value ? null : (is_string($value) ? $value : json_encode($value));
             }
             if ($desc[$field]['type'] == 'timestamp') {
                 try {
