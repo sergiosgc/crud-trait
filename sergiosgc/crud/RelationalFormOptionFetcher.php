@@ -18,7 +18,7 @@ class RelationalFormOptionFetcher {
         }
         return $properties;
     }
-    public static function setManyToOneOptions($property, $name) {
+    public static function setManyToOneOptions($property, $name, $properties) {
         $manyToOne = $property['db:many_to_one'];
         foreach (['type', 'keymap', 'label'] as $required) if (!isset($manyToOne[$required])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $name, $required));
         $class = $manyToOne['type'];
@@ -30,10 +30,25 @@ class RelationalFormOptionFetcher {
                 $manyToOne['label'], 
                 'ASC', 
                 isset($manyToOne['optionsFilter']) ? $manyToOne['optionsFilter'] : null,
-                null, 
-                null];
-            if (isset($manyToOne['optionsFilterArgs'])) $readAllArgs = array_merge($readAllArgs, $manyToOne['optionsFilterArgs']);
-            list($options, $optionCount) = call_user_func_array( [$class, 'dbReadPaged'], $readAllArgs);
+            ];
+            if (isset($manyToOne['optionsFilterArgs'])) {
+                $values = [];
+                foreach($properties as $name => $prop) if (isset($prop['value'])) $values[$name] = $prop['value'];
+                $filterArgs = [];
+                foreach ($manyToOne['optionsFilterArgs'] as $arg) $filterArgs[] = \sergiosgc\sprintf($arg, $values);
+                $readAllArgs = array_merge($readAllArgs, $filterArgs);
+            }
+
+            $updateDependencies = [];
+            foreach ($manyToOne['optionsFilterArgs'] as $arg) $updateDependencies = array_merge($updateDependencies, \sergiosgc\sprintf_conversion_specifiers_in($arg));
+            $updateDependencies = array_keys(array_flip($updateDependencies));
+
+            if (count($updateDependencies)) {
+                $property['ui:data-update-depends-on'] = json_encode($updateDependencies);
+            }
+            $property['ui:data-update-label'] = $property['db:many_to_one']['label'];
+            $property['ui:data-update-value'] = implode(',', array_values($property['db:many_to_one']['keymap']));
+            $options = call_user_func_array( [$class, 'dbReadAll'], $readAllArgs);
         }
         $property['options'] = array_map(
             function($option) use ($manyToOne) {
@@ -55,6 +70,7 @@ class RelationalFormOptionFetcher {
                 ];
             },
             $options);
+        if (count($property['options']) && !isset($property['value'])) $property['value'] = $property['options'][0]['value'];
         return $property;
     }
     public static function setManyToManyOptions($property, $name) {
