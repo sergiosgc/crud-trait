@@ -61,7 +61,7 @@ trait CRUD {
                     } elseif (( (string) $value ) === ( (string) ((int) $value) )) { // Unix timestamp
                         $datetime = new \DateTime('@' . $value);
                     } else {
-                        $datetime = new DateTime($value);
+                        $datetime = new \DateTime($value);
                     }
                     return $datetime->format('c');
                 } catch (\Exception $e) { return $value; }
