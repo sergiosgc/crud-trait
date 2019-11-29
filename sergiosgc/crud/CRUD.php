@@ -376,7 +376,7 @@ EOS;
     public function dbGetReferred($fieldName) {
         if (!isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) throw new Exception('dbGetReferred can only be used by Describable classes');
         $fields = static::describeFields();
-        if (!array_key_exists($fieldName, $fields)) throw new Exception(sprintf('%s is not a field of %s', $field, \get_called_class()));
+        if (!array_key_exists($fieldName, $fields)) throw new Exception(sprintf('%s is not a field of %s', $fieldName, \get_called_class()));
         $field = $fields[$fieldName];
         if (!array_key_exists('db:one_to_many', $field) &&
             !array_key_exists('db:many_to_one', $field) &&
