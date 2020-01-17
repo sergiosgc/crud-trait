@@ -246,7 +246,7 @@ EOS
     public function setDescribedFields($values) {
         if (!$this instanceof Describable) throw new Exception("CRUD::setDescribedFields() can only be used by Describable classes");
         foreach ($this->describeFields() as $field => $description) {
-            if (!in_array($description['type'], ['int', 'int[]', 'text', 'text[]', 'password', 'integer', 'color', 'date', 'time', 'timestamp', 'email', 'range', 'telephone', 'url', 'submit', 'json'])) continue;
+            if (!in_array($description['type'], ['int', 'int[]', 'text', 'text[]', 'password', 'integer', 'color', 'date', 'time', 'timestamp', 'email', 'range', 'telephone', 'url', 'submit', 'json', 'boolean'])) continue;
             $valueKey = substr($description['type'], -2) == '[]' ? $field  . '[]' : $field;
             if (!array_key_exists($valueKey, $values)) continue;
             $this->$field = $values[$valueKey];
