@@ -189,7 +189,7 @@ EOS
             implode(',', array_map(function($x) { return '?'; }, $toInsert)));
         $sth = static::getDB()->prepare($query);
         $sth->execute(array_values($toInsert));
-        if (count($keys) == 1 && !isset($this->{$keys[0]})) $this->${$keys[0]} = static::getDB()->lastInsertId(static::dbKeySequence());
+        if (count($keys) == 1 && !isset($this->{$keys[0]})) $this->{$keys[0]} = $insertId = static::getDB()->lastInsertId(static::dbKeySequence());
         $sth->closeCursor();
 
         $this->dbUpdateDescribedRelations();
