@@ -83,25 +83,19 @@ trait CRUD {
         $className = preg_replace('/^_/', '', $className);
         return $className;
     }
-    public static function dbExec($query) {
-        $args = func_get_args();
-        array_shift($args);
+    public static function dbExec($query, ...$args) {
         $sth = static::getDB()->prepare($query);
         $sth->execute($args);
         $sth->closeCursor();
     }
-    public static function dbFetchAll($query) {
-        $args = func_get_args();
-        array_shift($args);
+    public static function dbFetchAll($query, ...$args) {
         $sth = static::getDB()->prepare($query);
         $sth->execute($args);
         $result = $sth->fetchAll();
         $sth->closeCursor();
         return $result;
     }
-    public static function dbFetchAllCallback($query, $callback) {
-        $args = func_get_args();
-        for ($i=0; $i<2; $i++) array_shift($args);
+    public static function dbFetchAllCallback($query, $callback, ...$args) {
         $sth = static::getDB()->prepare($query);
         $sth->execute($args);
         $result = [];
@@ -109,10 +103,8 @@ trait CRUD {
         $sth->closeCursor();
         return $result;
     }
-    public static function dbReadPaged($sortColumn = null, $sortDir = 'ASC', $filter = null, $page = null, $pageSize = 20) {
+    public static function dbReadPaged($sortColumn = null, $sortDir = 'ASC', $filter = null, $page = null, $pageSize = 20, ...$filter_args) {
         $class = get_called_class();
-        $filter_args = func_get_args();
-        for ($i=0; $i<5; $i++) array_shift($filter_args);
 
         $query = sprintf(<<<EOS
 SELECT
@@ -148,10 +140,8 @@ EOS
 
         return [$result, $count];
     }
-    public static function dbReadAll($sortColumn = null, $sortDir = 'ASC', $filter = null) {
+    public static function dbReadAll($sortColumn = null, $sortDir = 'ASC', $filter = null, ...$filter_args) {
         $class = get_called_class();
-        $filter_args = func_get_args();
-        for ($i=0; $i<3; $i++) array_shift($filter_args);
 
         $query = sprintf(<<<EOS
 SELECT
@@ -195,9 +185,7 @@ EOS
         $this->dbUpdateDescribedRelations();
         return $insertId;
     }
-    public static function dbRead($filter) {
-        $filterArgs = func_get_args();
-        array_shift($filterArgs);
+    public static function dbRead($filter, ...$filterArgs) {
         $args = array_merge([null, 'ASC', $filter], $filterArgs);
         $result = call_user_func_array([get_called_class(), 'dbReadAll'], $args);
         if (count($result) > 1) throw new Exception('dbRead filter returned more than one result');
