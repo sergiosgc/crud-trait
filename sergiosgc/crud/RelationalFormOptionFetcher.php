@@ -33,7 +33,7 @@ class RelationalFormOptionFetcher {
             ];
             if (isset($manyToOne['optionsFilterArgs'])) {
                 $values = [];
-                foreach($properties as $name => $prop) if (isset($prop['value'])) $values[$name] = $prop['value'];
+                foreach($properties as $propertyName => $prop) if (isset($prop['value'])) $values[$propertyName] = $prop['value'];
                 $filterArgs = [];
                 foreach ($manyToOne['optionsFilterArgs'] as $arg) $filterArgs[] = \sergiosgc\sprintf($arg, $values);
                 $readAllArgs = array_merge($readAllArgs, $filterArgs);
