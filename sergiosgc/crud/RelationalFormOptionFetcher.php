@@ -70,7 +70,6 @@ class RelationalFormOptionFetcher {
                 ];
             },
             $options);
-        if (count($property['options']) && !isset($property['value'])) $property['value'] = $property['options'][0]['value'];
         return $property;
     }
     public static function setManyToManyOptions($property, $name) {
