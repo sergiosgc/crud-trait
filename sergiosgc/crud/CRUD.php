@@ -226,7 +226,6 @@ EOS
         $query = sprintf('DELETE FROM "%s" WHERE %s'
             , static::dbTableName(),
             implode(' AND ', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName); }, array_keys($where))));
-        print($query);
         $sth = static::getDB()->prepare($query);
         $sth->execute(array_values($where));
         $sth->closeCursor();
