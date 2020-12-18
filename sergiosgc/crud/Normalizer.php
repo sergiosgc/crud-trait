@@ -14,7 +14,10 @@ class Normalizer {
         ],
         'trim' => [
             'callable' => '\trim'
-        ]
+        ],
+        'emptyToNull' => [
+            'callable' => [ '\sergiosgc\crud\BaseNormalizers', 'emptyToNull' ]
+        ],
     ];
     public static function registerNormalizerFunction($normalizer, $function) {
         if (is_callable($function)) return static::registerNormalizerFunction($normalizer, [ 'callable' => $function ]);

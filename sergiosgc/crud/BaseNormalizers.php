@@ -11,4 +11,8 @@ class BaseNormalizers {
     public static function castToBoolean($value) {
         return (bool) $value;
     }
+    public static function emptyToNull($value) {
+        if (!empty($value)) return $value;
+        return null;
+    }
 }
