@@ -40,7 +40,7 @@ class RelationalFormOptionFetcher {
             }
 
             $updateDependencies = [];
-            foreach ($manyToOne['optionsFilterArgs'] as $arg) $updateDependencies = array_merge($updateDependencies, \sergiosgc\sprintf_conversion_specifiers_in($arg));
+            foreach ($manyToOne['optionsFilterArgs'] ?? [] as $arg) $updateDependencies = array_merge($updateDependencies, \sergiosgc\sprintf_conversion_specifiers_in($arg));
             $updateDependencies = array_keys(array_flip($updateDependencies));
 
             if (count($updateDependencies)) {
