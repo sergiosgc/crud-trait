@@ -15,6 +15,9 @@ class Normalizer {
         'trim' => [
             'callable' => '\trim'
         ],
+        'lowercase' => [
+            'callable' => '\strtolower'
+        ],
         'emptyToNull' => [
             'callable' => [ '\sergiosgc\crud\BaseNormalizers', 'emptyToNull' ]
         ],
