@@ -9,6 +9,7 @@ class BaseNormalizers {
         return (float) $value;
     }
     public static function castToBoolean($value) {
+        if ($value === "f" || $value === "0" || $value === 0 | $value === "false") return false;
         return (bool) $value;
     }
     public static function emptyToNull($value) {

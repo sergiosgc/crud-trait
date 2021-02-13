@@ -50,7 +50,7 @@ trait CRUD {
     public function dbSerializeField($field, $value) {
         if (isset(class_implements(\get_called_class())['sergiosgc\crud\Describable'])) {
             $desc = static::describeFields();
-            if ($desc[$field]['type'] == 'boolean') return $value ? '1' : '0';
+            if ($desc[$field]['type'] == 'boolean') return $value ? 1 : 0;
             if ($desc[$field]['type'] == 'json') {
                 return is_null($value) || '' === $value ? null : (is_string($value) ? $value : json_encode($value));
             }
