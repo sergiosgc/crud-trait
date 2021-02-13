@@ -231,13 +231,16 @@ EOS
         $sth->closeCursor();
     }
     public function setDescribedFields($values) {
+        $result = [];
         if (!$this instanceof Describable) throw new Exception("CRUD::setDescribedFields() can only be used by Describable classes");
         foreach ($this->describeFields() as $field => $description) {
             if (!in_array($description['type'], ['int', 'int[]', 'text', 'text[]', 'password', 'integer', 'color', 'date', 'time', 'timestamp', 'email', 'range', 'telephone', 'url', 'submit', 'json', 'boolean'])) continue;
             $valueKey = substr($description['type'], -2) == '[]' ? $field  . '[]' : $field;
             if (!array_key_exists($valueKey, $values)) continue;
+            if ($this->$field !== $values[$valueKey]) $result[$field] = $values[$valueKey];
             $this->$field = $values[$valueKey];
         }
+        return $result;
     }
     public function describableGetter($name) {
         if (!$this instanceof Describable) throw new Exception("CRUD::describableGetter() can only be used by Describable classes");
