@@ -29,9 +29,10 @@ class RelationalFormOptionFetcher {
             $readAllArgs = [
                 $manyToOne['label'], 
                 'ASC', 
-                isset($manyToOne['optionsFilter']) ? $manyToOne['optionsFilter'] : null,
+                isset($manyToOne['optionsFilter']) ? (is_callable($manyToOne['optionsFilter']) ? $manyToOne['optionsFilter']() : $manyToOne['optionsFilter']) : null,
             ];
             if (isset($manyToOne['optionsFilterArgs'])) {
+                if (is_callable($manyToOne['optionsFilterArgs'])) $manyToOne['optionsFilterArgs'] = $manyToOne['optionsFilterArgs']();
                 $values = [];
                 foreach($properties as $propertyName => $prop) if (isset($prop['value'])) $values[$propertyName] = $prop['value'];
                 $filterArgs = [];
