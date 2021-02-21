@@ -73,7 +73,7 @@ class RelationalFormOptionFetcher {
             $options);
         return $property;
     }
-    public static function setManyToManyOptions($property, $name) {
+    public static function setManyToManyOptions($property, $name, $properties) {
         $manyToMany = $property['db:many_to_many'];
         foreach (['type', 'keymap', 'label'] as $required) if (!isset($manyToMany[$required])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $name, $required));
         foreach (['middle_table', 'left', 'right'] as $required) if (!isset($manyToMany['keymap'][$required])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor in keymap", $name, $required));
@@ -85,11 +85,27 @@ class RelationalFormOptionFetcher {
             $readAllArgs = [
                 $manyToMany['label'], 
                 'ASC', 
-                isset($manyToMany['optionsFilter']) ? $manyToMany['optionsFilter'] : null,
-                null, 
-                null];
-            if (isset($manyToMany['optionsFilterArgs'])) $readAllArgs = array_merge($readAllArgs, $manyToMany['optionsFilterArgs']);
-            list($options, $optionCount) = call_user_func_array( [$class, 'dbReadPaged'], $readAllArgs);
+                isset($manyToMany['optionsFilter']) ? (is_callable($manyToMany['optionsFilter']) ? $manyToMany['optionsFilter']() : $manyToMany['optionsFilter']) : null,
+            ];
+            if (isset($manyToMany['optionsFilterArgs'])) {
+                if (is_callable($manyToMany['optionsFilterArgs'])) $manyToMany['optionsFilterArgs'] = $manyToMany['optionsFilterArgs']();
+                $values = [];
+                foreach($properties as $propertyName => $prop) if (isset($prop['value'])) $values[$propertyName] = $prop['value'];
+                $filterArgs = [];
+                foreach ($manyToMany['optionsFilterArgs'] as $arg) $filterArgs[] = \sergiosgc\sprintf($arg, $values);
+                $readAllArgs = array_merge($readAllArgs, $filterArgs);
+            }
+
+            $updateDependencies = [];
+            foreach ($manyToMany['optionsFilterArgs'] ?? [] as $arg) $updateDependencies = array_merge($updateDependencies, \sergiosgc\sprintf_conversion_specifiers_in($arg));
+            $updateDependencies = array_keys(array_flip($updateDependencies));
+
+            if (count($updateDependencies)) {
+                $property['ui:data-update-depends-on'] = json_encode($updateDependencies);
+            }
+            $property['ui:data-update-label'] = $property['db:many_to_many']['label'];
+            $property['ui:data-update-value'] = implode(',', array_values($property['db:many_to_many']['keymap']['right']));
+            $options = call_user_func_array( [$class, 'dbReadAll'], $readAllArgs);
         }
         $property['options'] = array_map(
             function($option) use ($manyToMany) {

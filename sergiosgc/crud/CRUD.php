@@ -235,7 +235,7 @@ EOS
         if (!$this instanceof Describable) throw new Exception("CRUD::setDescribedFields() can only be used by Describable classes");
         foreach ($this->describeFields() as $field => $description) {
             if (!in_array($description['type'], ['int', 'int[]', 'text', 'text[]', 'password', 'integer', 'color', 'date', 'time', 'timestamp', 'email', 'range', 'telephone', 'url', 'submit', 'json', 'boolean'])) continue;
-            $valueKey = substr($description['type'], -2) == '[]' ? $field  . '[]' : $field;
+            $valueKey = substr($description['type'], -2) == '[]' && array_key_exists($field . '[]', $values) ? $field  . '[]' : $field;
             if (!array_key_exists($valueKey, $values)) continue;
             if ($this->$field !== $values[$valueKey]) $result[$field] = $values[$valueKey];
             $this->$field = $values[$valueKey];
@@ -400,6 +400,40 @@ EOS;
                     return $_this->$key;
                 },
                 array_keys($field['db:one_to_many']['keymap']));
+            return call_user_func_array( [$class, 'dbReadAll'], array_merge( [ null, null, $queryWhere ], $queryArgs));
+        }
+        if (array_key_exists('db:many_to_many', $field)) {
+            if (!array_key_exists('keymap', $field['db:many_to_many'])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $fieldName, 'keymap'));
+            foreach(['middle_table', 'left', 'right'] as $descriptor) if (!array_key_exists($descriptor, $field['db:many_to_many']['keymap'])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no keymap %s descriptor", $fieldName, $descriptor));
+            if (!array_key_exists('type', $field['db:many_to_many'])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $fieldName, 'keymap'));
+            if (!class_exists($field['db:many_to_many']['type'])) throw new Exception(sprintf("%s field declared as type %s but that class does not exist", $fieldName, $field['db:one_to_many']['type']));
+            $class = $field['db:many_to_many']['type'];
+            $keymap = $field['db:many_to_many']['keymap'];
+            $queryWhere = sprintf('(%s) IN (SELECT %s FROM "%s" WHERE (%s) = (%s))',
+                implode(", ", array_map( 
+                    function($column) { return sprintf('"%s"', $column); },
+                    array_values($keymap['right'])
+                )),
+                implode(", ", array_map( 
+                    function($column) { return sprintf('"%s"', $column); },
+                    array_keys($keymap['right'])
+                )),
+                $keymap['middle_table'],
+                implode(", ", array_map( 
+                    function($column) { return sprintf('"%s"', $column); },
+                    array_values($keymap['left'])
+                )),
+                implode(", ", array_map( 
+                    function($column) { return sprintf('?', $column); },
+                    array_keys($keymap['left'])
+                )),
+            );
+            $_this = $this;
+            $queryArgs = array_map(
+                function($key) use ($_this) {
+                    return $_this->$key;
+                },
+                array_keys($keymap['left']));
             return call_user_func_array( [$class, 'dbReadAll'], array_merge( [ null, null, $queryWhere ], $queryArgs));
         }
         throw new Exception('Unimplemented'); // TODO: Implement me
