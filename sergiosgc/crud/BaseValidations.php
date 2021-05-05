@@ -3,27 +3,27 @@ namespace sergiosgc\Crud;
 
 class BaseValidations {
     public static function required($field, $describedFields, $values, $class, $message = null) {
-        $message = $message ?: _('Field is required');
+        $message = $message ?: __('Field is required');
         if (!isset($values[$field])) return [ $message ];
         return [];
     }
     public static function nonempty($field, $describedFields, $values, $class, $message = null) {
         $result = static::required($field, $describedFields, $values, $class, $message);
         if (count($result)) return $result;
-        $message = $message ?: _('Field must be non-empty');
+        $message = $message ?: __('Field must be non-empty');
         if (is_string($values[$field]) && $values[$field] == '' || is_null($values[$field])) return [ $message ];
         return [];
     }
     public static function regexp($field, $describedFields, $values, $class, $regex, $message = null) {
         if (!isset($values[$field])) return [ ];
-        $message = $message ?: sprintf(_('Field must match regex %s'), $regex);
+        $message = $message ?: sprintf(__('Field must match regex %s'), $regex);
         $result = preg_match($regex, $values[$field]);
         if ($result === FALSE) throw new Exception('Error executing regex: ' . $regex);
         if ($result == 0) return [ $message ];
         return [];
     }
     public static function dbUnique($field, $describedFields, $values, $class, $message = null) {
-        $message = $message ?: _('Field must be unique');
+        $message = $message ?: __('Field must be unique');
         if (!array_key_exists($field, $values)) return [];
         $keys = $class::dbKeyFields();
         if (array_reduce($keys, function ($acc, $key) use ($values) { return $acc && array_key_exists($key, $values); }, true)) {
