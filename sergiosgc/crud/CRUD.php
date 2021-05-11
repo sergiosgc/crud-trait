@@ -115,7 +115,7 @@ FROM "%s"
 %s
 EOS
             , implode(', ', array_map(function($f) { return "\"$f\""; }, static::dbFields())),
-            static::dbTableName(),
+            str_replace('.', '"."', static::dbTableName()),
             empty($filter) ? '' : sprintf('WHERE %s', $filter),
             $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '',
             is_null($page) ? '' : sprintf('LIMIT %d OFFSET %d', $pageSize, $pageSize * ($page - 1)));
@@ -134,7 +134,7 @@ SELECT count(*) AS "count"
 FROM "%s"
 %s
 EOS
-                , static::dbTableName(), empty($filter) ? '' : sprintf('WHERE %s', $filter));
+                , str_replace('.', '"."', static::dbTableName()), empty($filter) ? '' : sprintf('WHERE %s', $filter));
             $count = (int) ceil((0 + call_user_func_array(array($class, 'dbFetchAll'), array_merge([$query], $filter_args))[0]['count']) / $pageSize);
         }
 
@@ -151,7 +151,7 @@ FROM "%s"
 %s
 EOS
             , implode(', ', array_map(function($f) { return "\"$f\""; }, static::dbFields())),
-            static::dbTableName(),
+            str_replace('.', '"."', static::dbTableName()),
             empty($filter) ? '' : sprintf('WHERE %s', $filter),
             $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '');
         $result = call_user_func_array(
@@ -174,7 +174,7 @@ EOS
         $query = sprintf(<<<EOS
 INSERT INTO "%s"(%s) VALUES(%s)
 EOS
-            , static::dbTableName(),
+            , str_replace('.', '"."', static::dbTableName()),
             implode(',', array_map(function($fieldName) { return sprintf('"%s"', $fieldName); }, array_keys($toInsert))),
             implode(',', array_map(function($x) { return '?'; }, $toInsert)));
         $sth = static::getDB()->prepare($query);
@@ -209,7 +209,7 @@ UPDATE "%s"
 SET %s
 WHERE %s
 EOS
-        , static::dbTableName(),
+        , str_replace('.', '"."', static::dbTableName()),
         implode(',', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName);; }, array_keys($toUpdate))),
         implode(' AND ', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName); }, array_keys($where))));
         $sth = static::getDB()->prepare($query);
@@ -224,7 +224,7 @@ EOS
             $where[$key] = $this->dbSerializeField($key, $this->$key);
         }
         $query = sprintf('DELETE FROM "%s" WHERE %s'
-            , static::dbTableName(),
+            , str_replace('.', '"."', static::dbTableName()),
             implode(' AND ', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName); }, array_keys($where))));
         $sth = static::getDB()->prepare($query);
         $sth->execute(array_values($where));
@@ -265,9 +265,9 @@ EOS
         foreach (['middle_table', 'left', 'right'] as $required) if (!isset($manyToMany['keymap'][$required])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor in keymap", $name, $required));
         $class = $manyToMany['type'];
         if (!class_exists($class)) throw new Exception(sprintf("%s class does not exist", $class));
-        $leftTableName = static::dbTableName(true);
-        $middleTableName = $manyToMany['keymap']['middle_table'];
-        $rightTableName = $class::dbTableName(true);
+        $leftTableName = str_replace('.', '"."', static::dbTableName(true));
+        $middleTableName = str_replace('.', '"."', $manyToMany['keymap']['middle_table']);
+        $rightTableName = str_replace('.', '"."', $class::dbTableName(true));
         $resultFields = implode(',', array_map(
             function($field) use ($rightTableName) { return sprintf('"%s"."%s"', $rightTableName, $field);},
             $class::dbKeyFields()));
@@ -316,9 +316,9 @@ EOS;
         if (!class_exists($class)) throw new Exception(sprintf("%s class does not exist", $class));
         if (count($manyToMany['keymap']['left']) != 1) throw new Exception('Multi-key joins in middle table not implemented.');
         if (count($manyToMany['keymap']['right']) != 1) throw new Exception('Multi-key joins in middle table not implemented.');
-        $leftTableName = static::dbTableName(true);
-        $middleTableName = $manyToMany['keymap']['middle_table'];
-        $rightTableName = $class::dbTableName(true);
+        $leftTableName = str_replace('.', '"."', static::dbTableName(true));
+        $middleTableName = str_replace('.', '"."', $manyToMany['keymap']['middle_table']);
+        $rightTableName = str_replace('.', '"."', $class::dbTableName(true));
  
         $currentValues = $this->describableManyToManyGetter($name, $description);
         $newValues = $this->$name;
