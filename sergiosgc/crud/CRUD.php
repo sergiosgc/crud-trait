@@ -119,12 +119,10 @@ EOS
             empty($filter) ? '' : sprintf('WHERE %s', $filter),
             $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '',
             is_null($page) ? '' : sprintf('LIMIT %d OFFSET %d', $pageSize, $pageSize * ($page - 1)));
-        $result = call_user_func_array(
-            array($class, 'dbFetchAllCallback'),
-            array_merge(
-                [$query,
-                 function ($row) use ($class) { return (new $class())->dbMap($row); }],
-                $filter_args));
+        $result = $class::dbFetchAllCallback(
+                $query,
+                function ($row) use ($class) { return (new $class())->dbMap($row); },
+                ...$filter_args);
 
         if (is_null($page)) {
             $count = count($result);
@@ -135,7 +133,7 @@ FROM "%s"
 %s
 EOS
                 , str_replace('.', '"."', static::dbTableName()), empty($filter) ? '' : sprintf('WHERE %s', $filter));
-            $count = (int) ceil((0 + call_user_func_array(array($class, 'dbFetchAll'), array_merge([$query], $filter_args))[0]['count']) / $pageSize);
+            $count = (int) ceil((0 + $class::dbFetchAll($query, ...$filterArgs)[0]['count']) / $pageSize);
         }
 
         return [$result, $count];
@@ -154,12 +152,10 @@ EOS
             str_replace('.', '"."', static::dbTableName()),
             empty($filter) ? '' : sprintf('WHERE %s', $filter),
             $sortColumn ? sprintf('ORDER BY "%s" %s', $sortColumn, $sortDir) : '');
-        $result = call_user_func_array(
-            array($class, 'dbFetchAllCallback'),
-            array_merge(
-                [$query,
-                 function ($row) use ($class) { return (new $class())->dbMap($row); }],
-                $filter_args));
+        $result = $class::dbFetchAllCallback(
+                $query,
+                function ($row) use ($class) { return (new $class())->dbMap($row); },
+                ...$filter_args);
  
         return $result;
     }
@@ -382,7 +378,7 @@ EOS;
                     return $_this->$key;
                 },
                 array_keys($field['db:many_to_one']['keymap']));
-            return call_user_func_array( [$class, 'dbRead'], array_merge( [ $queryWhere ], $queryArgs));
+            return $class::dbRead($queryWhere, ...$queryArgs);
         }
         if (array_key_exists('db:one_to_many', $field)) {
             if (!array_key_exists('keymap', $field['db:one_to_many'])) throw new Exception(sprintf("%s field is declared db:one_to_many but has no %s descriptor", $fieldName, 'keymap'));
@@ -400,7 +396,7 @@ EOS;
                     return $_this->$key;
                 },
                 array_keys($field['db:one_to_many']['keymap']));
-            return call_user_func_array( [$class, 'dbReadAll'], array_merge( [ null, null, $queryWhere ], $queryArgs));
+            return $class::dbReadAll(null, null, $queryWhere, ...$queryArgs);
         }
         if (array_key_exists('db:many_to_many', $field)) {
             if (!array_key_exists('keymap', $field['db:many_to_many'])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $fieldName, 'keymap'));
@@ -434,7 +430,7 @@ EOS;
                     return $_this->$key;
                 },
                 array_keys($keymap['left']));
-            return call_user_func_array( [$class, 'dbReadAll'], array_merge( [ null, null, $queryWhere ], $queryArgs));
+            return $class::dbReadAll(null, null, $queryWhere, ...$queryArgs);
         }
         throw new Exception('Unimplemented'); // TODO: Implement me
     }
