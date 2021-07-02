@@ -133,7 +133,7 @@ FROM "%s"
 %s
 EOS
                 , str_replace('.', '"."', static::dbTableName()), empty($filter) ? '' : sprintf('WHERE %s', $filter));
-            $count = (int) ceil((0 + $class::dbFetchAll($query, ...$filterArgs)[0]['count']) / $pageSize);
+            $count = (int) ceil((0 + $class::dbFetchAll($query, ...$filter_args)[0]['count']) / $pageSize);
         }
 
         return [$result, $count];
