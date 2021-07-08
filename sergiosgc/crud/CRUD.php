@@ -43,6 +43,21 @@ trait CRUD {
             if ($desc[$field]['type'] == 'boolean') ($value == 'f' || $value == 'false' || $value == '0') ? false : (bool) $value;
             if ($desc[$field]['type'] == 'json') return json_decode($value, true);
             if ($desc[$field]['type'] == 'timestamp') try { return new \DateTime($value); } catch (\Exception $e) { return $value; }
+            if (substr($desc[$field]['type'], -2) == "[]") {
+                if (0 === preg_match_all('/{?(?<val>(?:[^,]*)|(?:"[^"]*"))(?:,|}$)/', $value, $matches)) return $value;
+                return array_map(function($escaped) {
+                    if (strlen($escaped) == 0) return $escaped;
+                    if ($escaped[0] != '"') return $escaped;
+                    return strtr(substr($escaped, 1, -1), [ 
+                        '\b' => "\b",
+                        '\f' => "\f",
+                        '\n' => "\n",
+                        '\r' => "\r",
+                        '\"' => '"',
+                        '\\' => '\\\\'
+                    ]);
+                }, $matches['val']);
+            }
         }
 
         return $value;
@@ -65,6 +80,40 @@ trait CRUD {
                     }
                     return $datetime->format('c');
                 } catch (\Exception $e) { return $value; }
+            }
+            if (substr($desc[$field]['type'], -2) == "[]" && !is_array($value)) throw new Exception('Unable to serialize non-array value onto array field ' . $field);
+            if (substr($desc[$field]['type'], -2) == "[]") {
+                $baseType = substr($desc[$field]['type'], 0, -2);
+                return sprintf("{ %s }", implode(", ", 
+                    array_map(
+                        function($v) {
+                            if (FALSE !== strpos($v, ",") || 
+                                FALSE !== strpos($v, "{") || 
+                                FALSE !== strpos($v, "}")) return sprintf('"%s"', strtr($v, [ '\\' => '\\\\', '"' => '\"' ]));
+                            return $v;
+                        }, 
+                        array_map(
+                            function($v) use ($baseType) {
+                                switch ($baseType) {
+                                    case 'boolean':
+                                        return $v ? 1 : 0;
+                                    case 'json':
+                                        return is_null($v) ? '' : (is_string($v) ? $v : json_encode($v));
+                                    case 'timestamp':
+                                        return ( $v instanceof \DateTime ? 
+                                            $value : 
+                                            ( ((string) $v) === ((string) ((int) $v)) ? 
+                                                new \DateTime('@' . $v) : 
+                                                new \DateTime($v) ) 
+                                        )->format('c');
+                                    default: 
+                                        return $v;
+                                }
+                            }, 
+                            $value
+                        )
+                    )
+                ));
             }
         }
 
