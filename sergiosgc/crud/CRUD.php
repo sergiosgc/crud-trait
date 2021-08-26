@@ -221,9 +221,12 @@ INSERT INTO "%s"(%s) VALUES(%s)
 EOS
             , str_replace('.', '"."', static::dbTableName()),
             implode(',', array_map(function($fieldName) { return sprintf('"%s"', $fieldName); }, array_keys($toInsert))),
-            implode(',', array_map(function($x) { return '?'; }, $toInsert)));
+            implode(',', array_map(function($fieldName) use ($toInsert) { 
+                if (is_array($toInsert[$fieldName])) { return sprintf('ARRAY[%s]', implode(',', array_map(function() { return '?'; }, $toInsert[$fieldName]))); }
+                return '?';
+            }, array_keys($toInsert))));
         $sth = static::getDB()->prepare($query);
-        $sth->execute(array_values($toInsert));
+        $sth->execute(array_reduce($toInsert, function($acc, $value) { return array_merge($acc, is_array($value) ? $value : [ $value ]); }, []));
         if (count($keys) == 1 && !isset($this->{$keys[0]})) $this->{$keys[0]} = $insertId = static::getDB()->lastInsertId(static::dbKeySequence());
         $sth->closeCursor();
 
@@ -255,10 +258,13 @@ SET %s
 WHERE %s
 EOS
         , str_replace('.', '"."', static::dbTableName()),
-        implode(',', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName);; }, array_keys($toUpdate))),
+        implode(',', array_map(function($fieldName) use ($toUpdate) { 
+            if (is_array($toUpdate[$fieldName])) { return sprintf('"%s" = ARRAY[%s]', $fieldName, implode(',', array_map(function() { return '?'; }, $toUpdate[$fieldName]))); }
+            return sprintf('"%s" = ?', $fieldName); 
+        }, array_keys($toUpdate))),
         implode(' AND ', array_map(function($fieldName) { return sprintf('"%s" = ?', $fieldName); }, array_keys($where))));
         $sth = static::getDB()->prepare($query);
-        $sth->execute(array_merge(array_values($toUpdate), array_values($where)));
+        $sth->execute(array_reduce(array_merge(array_values($toUpdate), array_values($where)), function($acc, $value) { return array_merge($acc, is_array($value) ? $value : [ $value ]); }, []));
         $sth->closeCursor();
         $this->dbUpdateDescribedRelations();
     }
