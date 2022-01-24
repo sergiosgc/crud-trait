@@ -19,6 +19,7 @@ class RelationalFormOptionFetcher {
         return $properties;
     }
     public static function setManyToOneOptions($property, $name, $properties) {
+        if (isset($property['ui:widget']) && in_array($property['ui:widget'], ['hidden'])) return $property;
         $manyToOne = $property['db:many_to_one'];
         foreach (['type', 'keymap', 'label'] as $required) if (!isset($manyToOne[$required])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $name, $required));
         $class = $manyToOne['type'];
@@ -74,6 +75,7 @@ class RelationalFormOptionFetcher {
         return $property;
     }
     public static function setManyToManyOptions($property, $name, $properties) {
+        if (isset($property['ui:widget']) && in_array($property['ui:widget'], ['hidden'])) return $property;
         $manyToMany = $property['db:many_to_many'];
         foreach (['type', 'keymap', 'label'] as $required) if (!isset($manyToMany[$required])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor", $name, $required));
         foreach (['middle_table', 'left', 'right'] as $required) if (!isset($manyToMany['keymap'][$required])) throw new Exception(sprintf("%s field is declared db:many_to_many but has no %s descriptor in keymap", $name, $required));
