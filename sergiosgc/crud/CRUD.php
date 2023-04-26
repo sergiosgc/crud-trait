@@ -154,6 +154,7 @@ trait CRUD {
     }
     public static function dbReadPaged($sortColumn = null, $sortDir = 'ASC', $filter = null, $page = null, $pageSize = 20, ...$filter_args) {
         $class = get_called_class();
+        if (!is_null($sortColumn) && !in_array($sortColumn, static::dbFields())) throw new Exception("Invalid sort column");
 
         $query = sprintf(<<<EOS
 SELECT
