@@ -6,7 +6,7 @@ trait Validatable {
         return Validator::validateValues(static::describeFields(), (array) $values);
     }
     public function validateInstance() {
-        $result = Validator::validateValues(static::describeFields, (array) $this);
+        $result = Validator::validateValues(static::describeFields(), (array) $this);
         if (is_callable([$this, '_validate'])) foreach($this->_validate() as $field => $errors) {
             if (!is_array($errors)) $errors = [ (string) $errors ];
             if (!isset($result[$field])) $result[$field] = [];
