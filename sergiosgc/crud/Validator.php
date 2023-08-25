@@ -14,6 +14,9 @@ class Validator {
         ],
         'db:unique' => [
             'callable' => [ '\sergiosgc\crud\BaseValidations', 'dbUnique' ]
+        ],
+        'email' => [
+            'callable' => [ '\sergiosgc\crud\BaseValidations', 'email' ]
         ]
     ];
     public static function registerValidationFunction($validation, $function) {
@@ -28,14 +31,24 @@ class Validator {
             if (!isset($description['validation'])) continue;
             $fieldErrors = [];
             foreach ($description['validation'] as $validation) {
-                if (!isset(static::$validationFunctionMap[is_array($validation) ? $validation[0] : $validation])) continue;
                 $args = [$field, $describedFields, $values, $class];
-                if (\array_key_exists('args', static::$validationFunctionMap[$validation])) $args = array_merge($args, static::$validationFunctionMap[$validation]['args']);
+                $validationFunction = null;
+                if (
+                    (
+                     is_string(is_array($validation) ? $validation[0] : $validation)
+                     || is_int(is_array($validation) ? $validation[0] : $validation)
+                    )
+                    && isset(static::$validationFunctionMap[is_array($validation) ? $validation[0] : $validation])) {
+
+                    $validationFunction = static::$validationFunctionMap[is_array($validation) ? $validation[0] : $validation]['callable'];
+                    if (\array_key_exists('args', static::$validationFunctionMap[is_array($validation) ? $validation[0] : $validation])) $args = array_merge($args, static::$validationFunctionMap[is_array($validation) ? $validation[0] : $validation]['args']);
+                } else {
+                    if (is_callable( is_array($validation) ? $validation[0] : $validation )) $validationFunction = is_array($validation) ? $validation[0] : $validation;
+                }
                 if (is_array($validation)) {
                     $args = array_merge($args, array_slice($validation, 1));
-                    $validation = $validation[0];
                 }
-                $fieldErrors = array_merge($fieldErrors, call_user_func_array(static::$validationFunctionMap[$validation]['callable'], $args));
+                $fieldErrors = array_merge($fieldErrors, call_user_func_array($validationFunction, $args));
             }
             if (count($fieldErrors)) $errors[$field] = $fieldErrors;
         }
