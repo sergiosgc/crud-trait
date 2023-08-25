@@ -34,14 +34,22 @@ class Normalizer {
             if (!isset($description['normalizer'])) $description['normalizer'] = [];
             $description['normalizer'][] = sprintf('type:' . $description['type']);
             foreach ($description['normalizer'] as $normalizer) {
-                if (!isset(static::$normalizerFunctionMap[is_array($normalizer) ? $normalizer[0] : $normalizer])) continue;
+                $normalizerFunction = null;
                 $args = [$values[$field]];
-                if (\array_key_exists('args', static::$normalizerFunctionMap[$normalizer])) $args = array_merge($args, static::$normalizerFunctionMap[$normalizer]['args']);
-                if (is_array($normalizer)) {
-                    $args = array_merge($args, array_slice($normalizer, 1));
-                    $normalizer = $normalizer[0];
-                }
-                $values[$field] = call_user_func_array(static::$normalizerFunctionMap[$normalizer]['callable'], $args);
+                if (
+                    (
+                        is_string(is_array($normalizer) ? $normalizer[0] : $normalizer)
+                        || is_int(is_array($normalizer) ? $normalizer[0] : $normalizer)
+                    )
+                    && isset(static::$normalizerFunctionMap[is_array($normalizer) ? $normalizer[0] : $normalizer])) {
+                        $normalizerFunction = static::$normalizerFunctionMap[is_array($normalizer) ? $normalizer[0] : $normalizer]['callable'];
+                        if (\array_key_exists('args', static::$normalizerFunctionMap[is_array($normalizer) ? $normalizer[0] : $normalizer])) $args = array_merge($args, static::$normalizerFunctionMap[is_array($normalizer) ? $normalizer[0] : $normalizer]['args']);
+                    } else {
+                        if (is_callable(is_array($normalizer) ? $normalizer[0] : $normalizer)) $normalizerFunction = is_array($normalizer) ? $normalizer[0] : $normalizer;
+                    }
+                if (is_null($normalizerFunction)) continue;
+                if (is_array($normalizer)) $args = array_merge($args, array_slice($normalizer, 1));
+                $values[$field] = call_user_func_array($normalizerFunction, $args);
             }
         }
         return $values;
