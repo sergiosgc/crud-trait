@@ -8,7 +8,7 @@ trait ArrayAccess {
     }
     public function offsetGet ( mixed $offset ): mixed {
         if (!$this->offsetExists($offset)) return null;
-        return $this->$offset;
+        return @$this->$offset;
     }
     public function offsetSet ( mixed $offset , mixed $value ): void {
         if (!$this->offsetExists($offset)) return;
