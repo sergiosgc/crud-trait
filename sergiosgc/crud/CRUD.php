@@ -218,7 +218,7 @@ EOS
             $toInsert[$field] = $this->dbSerializeField($field, $this->$field);
         }
         $query = sprintf(<<<EOS
-INSERT INTO "%s"(%s) VALUES(%s)
+INSERT INTO "%s"(%s) VALUES(%s) RETURNING *
 EOS
             , str_replace('.', '"."', static::dbTableName()),
             implode(',', array_map(function($fieldName) { return sprintf('"%s"', $fieldName); }, array_keys($toInsert))),
@@ -228,11 +228,18 @@ EOS
             }, array_keys($toInsert))));
         $sth = static::getDB()->prepare($query);
         $sth->execute(array_reduce($toInsert, function($acc, $value) { return array_merge($acc, is_array($value) ? $value : [ $value ]); }, []));
-        if (count($keys) == 1 && !isset($this->{$keys[0]})) $this->{$keys[0]} = $insertId = static::getDB()->lastInsertId(static::dbKeySequence());
+        $result = $sth->fetchAll();
+        $insertedKeys = array_reduce(
+            array_map(
+                function($key) use ($result) { return [ $key, $result[0][$key] ]; },
+                    $keys
+            ),
+            function($acc, $value) { $acc[$value[0]] = $value[1]; return $acc; },
+            []
+        );
         $sth->closeCursor();
-
-        $this->dbUpdateDescribedRelations();
-        return $insertId;
+        foreach ($insertedKeys as $key => $value) $this->{$key} = $value;
+        return count($insertedKeys) == 1 ? $insertedKeys[$keys[0]] : $insertedKeys;
     }
     public static function dbRead($filter, ...$filterArgs) {
         $args = array_merge([null, 'ASC', $filter], $filterArgs);
