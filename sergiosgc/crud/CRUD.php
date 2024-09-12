@@ -101,7 +101,7 @@ trait CRUD {
                                         return is_null($v) ? '' : (is_string($v) ? $v : json_encode($v));
                                     case 'timestamp':
                                         return ( $v instanceof \DateTime ? 
-                                            $value : 
+                                            $v : 
                                             ( ((string) $v) === ((string) ((int) $v)) ? 
                                                 new \DateTime('@' . $v) : 
                                                 new \DateTime($v) ) 
